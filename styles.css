@@ -150,7 +150,8 @@ body {
     bottom: 0;
     background: 
         radial-gradient(circle at 20% 50%, rgba(255, 107, 53, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.3) 0%, transparent 50%);
+        radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 50% 20%, rgba(118, 75, 162, 0.2) 0%, transparent 40%);
     animation: pulse 8s ease-in-out infinite;
 }
 
