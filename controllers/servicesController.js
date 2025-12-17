@@ -1,4 +1,5 @@
 const Service = require('../models/Service');
+const logger = require('../utils/logger');
 
 // Получение всех услуг
 const getAllServices = async (req, res) => {
@@ -10,7 +11,7 @@ const getAllServices = async (req, res) => {
             data: services
         });
     } catch (error) {
-        console.error('Get services error:', error);
+        logger.error('Get services error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при получении списка услуг'
@@ -36,7 +37,7 @@ const getServiceById = async (req, res) => {
             data: service
         });
     } catch (error) {
-        console.error('Get service error:', error);
+        logger.error('Get service error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при получении услуги'

@@ -1,5 +1,6 @@
 const Appointment = require('../models/Appointment');
 const emailService = require('../services/emailService');
+const logger = require('../utils/logger');
 
 // Создание новой записи
 const createAppointment = async (req, res) => {
@@ -33,7 +34,7 @@ const createAppointment = async (req, res) => {
         try {
             await emailService.sendAppointmentConfirmation(savedAppointment);
         } catch (emailError) {
-            console.error('Email sending failed:', emailError);
+            logger.error('Email sending failed', emailError);
         }
 
         res.status(201).json({
@@ -46,7 +47,7 @@ const createAppointment = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Appointment creation error:', error);
+        logger.error('Appointment creation error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Произошла ошибка при создании записи. Попробуйте позже.'
@@ -64,7 +65,7 @@ const getAllAppointments = async (req, res) => {
             data: appointments
         });
     } catch (error) {
-        console.error('Get appointments error:', error);
+        logger.error('Get appointments error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при получении записей'
@@ -90,7 +91,7 @@ const getAppointmentById = async (req, res) => {
             data: appointment
         });
     } catch (error) {
-        console.error('Get appointment error:', error);
+        logger.error('Get appointment error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при получении записи'
@@ -119,7 +120,7 @@ const updateAppointment = async (req, res) => {
             data: appointment
         });
     } catch (error) {
-        console.error('Update appointment error:', error);
+        logger.error('Update appointment error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при обновлении записи'
@@ -145,7 +146,7 @@ const deleteAppointment = async (req, res) => {
             message: 'Запись успешно удалена'
         });
     } catch (error) {
-        console.error('Delete appointment error:', error);
+        logger.error('Delete appointment error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при удалении записи'
