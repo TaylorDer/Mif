@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
+const logger = require('./utils/logger');
 const contactRoutes = require('./routes/contact');
 const servicesRoutes = require('./routes/services');
 const appointmentsRoutes = require('./routes/appointments');
@@ -19,7 +20,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Логирование запросов
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    logger.info(`${req.method} ${req.path}`, {
+        ip: req.ip,
+        userAgent: req.get('user-agent')
+    });
     next();
 });
 
@@ -61,7 +65,7 @@ app.use((req, res) => {
 
 // Обработка ошибок
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
+    logger.error('Request error', err);
     res.status(err.status || 500).json({
         error: err.message || 'Internal Server Error',
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
@@ -70,8 +74,9 @@ app.use((err, req, res, next) => {
 
 // Запуск сервера
 app.listen(PORT, () => {
-    console.log(`🚗 Mif Auto Backend server is running on port ${PORT}`);
-    console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+    logger.info(`🚗 Mif Auto Backend server is running on port ${PORT}`);
+    logger.info(`📍 Health check: http://localhost:${PORT}/api/health`);
+    logger.debug('Server started in', { env: process.env.NODE_ENV || 'development' });
 });
 
 module.exports = app;
