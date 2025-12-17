@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const logger = require('./utils/logger');
+const config = require('./config/config');
 const rateLimiter = require('./middleware/rateLimiter');
 const contactRoutes = require('./routes/contact');
 const servicesRoutes = require('./routes/services');
@@ -12,15 +13,15 @@ const appointmentsRoutes = require('./routes/appointments');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.server.port;
 
 // Middleware
-app.use(cors());
+app.use(cors(config.cors));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Rate limiting
-app.use('/api/', rateLimiter({ maxRequests: 100, windowMs: 15 * 60 * 1000 }));
+app.use('/api/', rateLimiter(config.rateLimit));
 
 // Логирование запросов
 app.use((req, res, next) => {
