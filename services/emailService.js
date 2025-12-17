@@ -1,23 +1,31 @@
 const nodemailer = require('nodemailer');
+const config = require('../config/config');
+const logger = require('../utils/logger');
 
 // Настройка транспорта для отправки email
-// В реальном приложении настройки будут браться из переменных окружения
 const createTransporter = () => {
+    // Проверяем, включена ли отправка email
+    if (!config.email.enabled) {
+        logger.debug('Email service is disabled');
+        return null;
+    }
+    
     // Если настроены SMTP настройки, используем их
-    if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    if (config.email.smtp.host && config.email.smtp.user) {
         return nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT || 587,
-            secure: process.env.SMTP_SECURE === 'true',
+            host: config.email.smtp.host,
+            port: config.email.smtp.port,
+            secure: config.email.smtp.secure,
             auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
+                user: config.email.smtp.user,
+                pass: config.email.smtp.pass
             }
         });
     }
     
     // Для разработки можно использовать тестовый аккаунт
     // В продакшене обязательно настройте реальный SMTP
+    logger.warn('SMTP configuration is incomplete');
     return null;
 };
 
@@ -26,14 +34,14 @@ const sendContactNotification = async (contact) => {
     const transporter = createTransporter();
     
     if (!transporter) {
-        console.log('Email service not configured. Contact saved:', contact);
+        logger.debug('Email service not configured. Contact saved', { contactId: contact.id });
         return;
     }
 
     try {
         const mailOptions = {
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+            from: config.email.from || config.email.smtp.user,
+            to: config.email.admin || config.email.smtp.user,
             subject: `Новое сообщение от ${contact.name} - Mif Auto`,
             html: `
                 <h2>Новое сообщение с сайта Mif Auto</h2>
@@ -46,9 +54,9 @@ const sendContactNotification = async (contact) => {
         };
 
         await transporter.sendMail(mailOptions);
-        console.log('Contact notification email sent');
+        logger.info('Contact notification email sent', { contactId: contact.id });
     } catch (error) {
-        console.error('Error sending contact notification:', error);
+        logger.error('Error sending contact notification', error);
         throw error;
     }
 };
@@ -58,7 +66,7 @@ const sendAppointmentConfirmation = async (appointment) => {
     const transporter = createTransporter();
     
     if (!transporter) {
-        console.log('Email service not configured. Appointment saved:', appointment);
+        logger.debug('Email service not configured. Appointment saved', { appointmentId: appointment.id });
         return;
     }
 
@@ -66,7 +74,7 @@ const sendAppointmentConfirmation = async (appointment) => {
         // Email клиенту
         if (appointment.email) {
             const clientMailOptions = {
-                from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                from: config.email.from || config.email.smtp.user,
                 to: appointment.email,
                 subject: 'Запись в Mif Auto - получена',
                 html: `
@@ -87,8 +95,8 @@ const sendAppointmentConfirmation = async (appointment) => {
 
         // Email администратору
         const adminMailOptions = {
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: process.env.ADMIN_EMAIL || process.env.SMTP_USER,
+            from: config.email.from || config.email.smtp.user,
+            to: config.email.admin || config.email.smtp.user,
             subject: `Новая запись от ${appointment.name} - Mif Auto`,
             html: `
                 <h2>Новая запись на обслуживание</h2>
@@ -104,9 +112,9 @@ const sendAppointmentConfirmation = async (appointment) => {
         };
 
         await transporter.sendMail(adminMailOptions);
-        console.log('Appointment confirmation emails sent');
+        logger.info('Appointment confirmation emails sent', { appointmentId: appointment.id });
     } catch (error) {
-        console.error('Error sending appointment confirmation:', error);
+        logger.error('Error sending appointment confirmation', error);
         throw error;
     }
 };
