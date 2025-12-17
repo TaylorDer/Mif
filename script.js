@@ -96,6 +96,14 @@ document.querySelectorAll('.feature-item').forEach(item => {
     observer.observe(item);
 });
 
+// Observe review cards
+document.querySelectorAll('.review-card').forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+    observer.observe(card);
+});
+
 // Navbar background on scroll
 let lastScroll = 0;
 window.addEventListener('scroll', () => {
