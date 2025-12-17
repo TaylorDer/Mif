@@ -1,5 +1,6 @@
 const Contact = require('../models/Contact');
 const emailService = require('../services/emailService');
+const logger = require('../utils/logger');
 
 // Отправка формы обратной связи
 const submitContact = async (req, res) => {
@@ -29,8 +30,9 @@ const submitContact = async (req, res) => {
         // Отправка email (опционально)
         try {
             await emailService.sendContactNotification(savedContact);
+            logger.info('Contact notification email sent', { contactId: savedContact.id });
         } catch (emailError) {
-            console.error('Email sending failed:', emailError);
+            logger.error('Email sending failed', emailError);
             // Не прерываем процесс, если email не отправился
         }
 
@@ -43,7 +45,7 @@ const submitContact = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Contact submission error:', error);
+        logger.error('Contact submission error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Произошла ошибка при отправке сообщения. Попробуйте позже.'
@@ -61,7 +63,7 @@ const getAllContacts = async (req, res) => {
             data: contacts
         });
     } catch (error) {
-        console.error('Get contacts error:', error);
+        logger.error('Get contacts error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при получении сообщений'
@@ -87,7 +89,7 @@ const getContactById = async (req, res) => {
             data: contact
         });
     } catch (error) {
-        console.error('Get contact error:', error);
+        logger.error('Get contact error', error);
         res.status(500).json({
             error: 'Internal Server Error',
             message: 'Ошибка при получении сообщения'
