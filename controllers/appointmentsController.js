@@ -1,6 +1,7 @@
 const Appointment = require('../models/Appointment');
 const emailService = require('../services/emailService');
 const logger = require('../utils/logger');
+const { sanitizeString, formatPhone } = require('../utils/helpers');
 
 // Создание новой записи
 const createAppointment = async (req, res) => {
@@ -15,15 +16,15 @@ const createAppointment = async (req, res) => {
             });
         }
 
-        // Создание записи
+        // Создание записи с санитизацией данных
         const appointment = new Appointment({
-            name,
-            phone,
-            email: email || '',
-            serviceId,
-            date: date || '',
-            time: time || '',
-            message: message || '',
+            name: sanitizeString(name),
+            phone: formatPhone(phone),
+            email: email ? sanitizeString(email) : '',
+            serviceId: parseInt(serviceId),
+            date: date ? sanitizeString(date) : '',
+            time: time ? sanitizeString(time) : '',
+            message: message ? sanitizeString(message) : '',
             status: 'pending',
             createdAt: new Date()
         });
