@@ -1,5 +1,7 @@
 // Middleware для валидации данных
 
+const config = require('../config/config');
+
 const validateContact = (req, res, next) => {
     const { name, phone } = req.body;
     
@@ -17,9 +19,8 @@ const validateContact = (req, res, next) => {
         });
     }
     
-    // Простая проверка формата телефона
-    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
-    if (!phoneRegex.test(phone)) {
+    // Проверка формата телефона
+    if (!config.validation.phoneRegex.test(phone)) {
         return res.status(400).json({
             error: 'Validation Error',
             message: 'Неверный формат телефона'
@@ -28,8 +29,7 @@ const validateContact = (req, res, next) => {
     
     // Проверка email, если указан
     if (req.body.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(req.body.email)) {
+        if (!config.validation.emailRegex.test(req.body.email)) {
             return res.status(400).json({
                 error: 'Validation Error',
                 message: 'Неверный формат email'
@@ -43,10 +43,17 @@ const validateContact = (req, res, next) => {
 const validateAppointment = (req, res, next) => {
     const { name, phone, serviceId } = req.body;
     
-    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+    if (!name || typeof name !== 'string' || name.trim().length < config.validation.minNameLength) {
         return res.status(400).json({
             error: 'Validation Error',
-            message: 'Имя должно содержать минимум 2 символа'
+            message: `Имя должно содержать минимум ${config.validation.minNameLength} символа`
+        });
+    }
+    
+    if (name.trim().length > config.validation.maxNameLength) {
+        return res.status(400).json({
+            error: 'Validation Error',
+            message: `Имя не должно превышать ${config.validation.maxNameLength} символов`
         });
     }
     
@@ -57,8 +64,7 @@ const validateAppointment = (req, res, next) => {
         });
     }
     
-    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
-    if (!phoneRegex.test(phone)) {
+    if (!config.validation.phoneRegex.test(phone)) {
         return res.status(400).json({
             error: 'Validation Error',
             message: 'Неверный формат телефона'
@@ -73,8 +79,7 @@ const validateAppointment = (req, res, next) => {
     }
     
     if (req.body.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(req.body.email)) {
+        if (!config.validation.emailRegex.test(req.body.email)) {
             return res.status(400).json({
                 error: 'Validation Error',
                 message: 'Неверный формат email'
