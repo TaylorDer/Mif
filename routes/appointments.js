@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const appointmentsController = require('../controllers/appointmentsController');
+const { validateAppointment } = require('../middleware/validator');
 
 // POST /api/appointments - Создание новой записи
-router.post('/', appointmentsController.createAppointment);
+router.post('/', validateAppointment, appointmentsController.createAppointment);
 
 // GET /api/appointments - Получение всех записей (для админки)
 router.get('/', appointmentsController.getAllAppointments);
