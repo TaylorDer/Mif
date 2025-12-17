@@ -1,6 +1,7 @@
 const Contact = require('../models/Contact');
 const emailService = require('../services/emailService');
 const logger = require('../utils/logger');
+const { sanitizeString, formatPhone } = require('../utils/helpers');
 
 // Отправка формы обратной связи
 const submitContact = async (req, res) => {
@@ -15,12 +16,12 @@ const submitContact = async (req, res) => {
             });
         }
 
-        // Создание записи
+        // Создание записи с санитизацией данных
         const contact = new Contact({
-            name,
-            phone,
-            email: email || '',
-            message: message || '',
+            name: sanitizeString(name),
+            phone: formatPhone(phone),
+            email: email ? sanitizeString(email) : '',
+            message: message ? sanitizeString(message) : '',
             createdAt: new Date()
         });
 
