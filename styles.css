@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+/* Smooth transitions for interactive elements */
+a, button, input, textarea {
+    transition: all 0.3s ease;
+}
+
 :root {
     --primary-color: #ff6b35;
     --primary-dark: #e55a2b;
