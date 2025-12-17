@@ -195,3 +195,24 @@ if (scrollToTopBtn) {
     });
 }
 
+// Load services from API
+async function loadServices() {
+    try {
+        const API_URL = process.env.API_URL || 'http://localhost:3000';
+        const response = await fetch(`${API_URL}/api/services`);
+        const result = await response.json();
+        
+        if (response.ok && result.data) {
+            // Services are already in HTML, but we could update them dynamically here
+            console.log('Services loaded:', result.data);
+        }
+    } catch (error) {
+        console.error('Error loading services:', error);
+    }
+}
+
+// Load services on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadServices();
+});
+
