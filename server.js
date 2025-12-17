@@ -62,9 +62,19 @@ app.get('/', (req, res) => {
 
 // Обработка 404
 app.use((req, res) => {
+    logger.warn(`404 Not Found: ${req.method} ${req.path}`, {
+        ip: req.ip,
+        url: req.url
+    });
     res.status(404).json({ 
         error: 'Not Found',
-        message: `Route ${req.method} ${req.path} not found`
+        message: `Route ${req.method} ${req.path} not found`,
+        availableEndpoints: {
+            health: '/api/health',
+            contact: '/api/contact',
+            services: '/api/services',
+            appointments: '/api/appointments'
+        }
     });
 });
 
