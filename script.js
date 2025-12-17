@@ -224,6 +224,14 @@ document.querySelectorAll('.review-card').forEach((card, index) => {
     observer.observe(card);
 });
 
+// Observe gallery items
+document.querySelectorAll('.gallery-item').forEach((item, index) => {
+    item.style.opacity = '0';
+    item.style.transform = 'scale(0.8)';
+    item.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+    observer.observe(item);
+});
+
 // Navbar background on scroll
 let lastScroll = 0;
 window.addEventListener('scroll', () => {
