@@ -285,8 +285,31 @@ async function loadServices() {
     }
 }
 
+// Typewriter effect for hero subtitle
+function typeWriter(element, text, speed = 50) {
+    let i = 0;
+    element.textContent = '';
+    
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    
+    type();
+}
+
 // Load services on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadServices();
+    
+    // Optional: Add typewriter effect to hero subtitle
+    // const heroSubtitle = document.querySelector('.hero-subtitle');
+    // if (heroSubtitle) {
+    //     const originalText = heroSubtitle.textContent;
+    //     typeWriter(heroSubtitle, originalText, 30);
+    // }
 });
 
