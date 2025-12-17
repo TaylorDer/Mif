@@ -44,11 +44,71 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// Form validation
+function validatePhone(phone) {
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+    return phoneRegex.test(phone);
+}
+
+function validateEmail(email) {
+    if (!email) return true; // Email is optional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
 // Form submission
 const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
+    // Add real-time validation
+    const phoneInput = contactForm.querySelector('#phone');
+    const emailInput = contactForm.querySelector('#email');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('blur', function() {
+            if (this.value && !validatePhone(this.value)) {
+                this.style.borderColor = 'var(--primary-color)';
+                showFieldError(this, 'Введите корректный номер телефона');
+            } else {
+                this.style.borderColor = '';
+                clearFieldError(this);
+            }
+        });
+    }
+    
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            if (this.value && !validateEmail(this.value)) {
+                this.style.borderColor = 'var(--primary-color)';
+                showFieldError(this, 'Введите корректный email');
+            } else {
+                this.style.borderColor = '';
+                clearFieldError(this);
+            }
+        });
+    }
+    
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Validate before submit
+        const name = contactForm.querySelector('#name').value.trim();
+        const phone = contactForm.querySelector('#phone').value.trim();
+        const email = contactForm.querySelector('#email').value.trim();
+        
+        if (!name) {
+            showNotification('Пожалуйста, введите ваше имя', 'error');
+            return;
+        }
+        
+        if (!phone || !validatePhone(phone)) {
+            showNotification('Пожалуйста, введите корректный номер телефона', 'error');
+            return;
+        }
+        
+        if (email && !validateEmail(email)) {
+            showNotification('Пожалуйста, введите корректный email', 'error');
+            return;
+        }
         
         // Get form data
         const formData = new FormData(contactForm);
@@ -88,6 +148,20 @@ if (contactForm) {
             submitBtn.textContent = originalText;
         }
     });
+}
+
+// Field error helpers
+function showFieldError(field, message) {
+    clearFieldError(field);
+    const error = document.createElement('div');
+    error.className = 'field-error';
+    error.textContent = message;
+    field.parentNode.appendChild(error);
+}
+
+function clearFieldError(field) {
+    const error = field.parentNode.querySelector('.field-error');
+    if (error) error.remove();
 }
 
 // Notification system
