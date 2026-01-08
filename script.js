@@ -1,0 +1,343 @@
+// Mobile menu toggle
+const navToggle = document.querySelector('.nav-toggle');
+const navMenu = document.querySelector('.nav-menu');
+
+navToggle.addEventListener('click', () => {
+    navMenu.classList.toggle('active');
+    
+    // Animate hamburger icon
+    const spans = navToggle.querySelectorAll('span');
+    if (navMenu.classList.contains('active')) {
+        spans[0].style.transform = 'rotate(45deg) translateY(8px)';
+        spans[1].style.opacity = '0';
+        spans[2].style.transform = 'rotate(-45deg) translateY(-8px)';
+    } else {
+        spans[0].style.transform = 'none';
+        spans[1].style.opacity = '1';
+        spans[2].style.transform = 'none';
+    }
+});
+
+// Close menu when clicking on a link
+document.querySelectorAll('.nav-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        const spans = navToggle.querySelectorAll('span');
+        spans[0].style.transform = 'none';
+        spans[1].style.opacity = '1';
+        spans[2].style.transform = 'none';
+    });
+});
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            const offsetTop = target.offsetTop - 80;
+            window.scrollTo({
+                top: offsetTop,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+// Form validation
+function validatePhone(phone) {
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+    return phoneRegex.test(phone);
+}
+
+function validateEmail(email) {
+    if (!email) return true; // Email is optional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Form submission
+const contactForm = document.querySelector('.contact-form');
+if (contactForm) {
+    // Add real-time validation
+    const phoneInput = contactForm.querySelector('#phone');
+    const emailInput = contactForm.querySelector('#email');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('blur', function() {
+            if (this.value && !validatePhone(this.value)) {
+                this.style.borderColor = 'var(--primary-color)';
+                showFieldError(this, 'Введите корректный номер телефона');
+            } else {
+                this.style.borderColor = '';
+                clearFieldError(this);
+            }
+        });
+    }
+    
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            if (this.value && !validateEmail(this.value)) {
+                this.style.borderColor = 'var(--primary-color)';
+                showFieldError(this, 'Введите корректный email');
+            } else {
+                this.style.borderColor = '';
+                clearFieldError(this);
+            }
+        });
+    }
+    
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Validate before submit
+        const name = contactForm.querySelector('#name').value.trim();
+        const phone = contactForm.querySelector('#phone').value.trim();
+        const email = contactForm.querySelector('#email').value.trim();
+        
+        if (!name) {
+            showNotification('Пожалуйста, введите ваше имя', 'error');
+            return;
+        }
+        
+        if (!phone || !validatePhone(phone)) {
+            showNotification('Пожалуйста, введите корректный номер телефона', 'error');
+            return;
+        }
+        
+        if (email && !validateEmail(email)) {
+            showNotification('Пожалуйста, введите корректный email', 'error');
+            return;
+        }
+        
+        // Get form data
+        const formData = new FormData(contactForm);
+        const data = Object.fromEntries(formData);
+        
+        // Disable submit button
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Отправка...';
+        
+        try {
+            // Send to backend API
+            const API_URL = process.env.API_URL || 'http://localhost:3000';
+            const response = await fetch(`${API_URL}/api/contact`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Show success message
+                showNotification('Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.', 'success');
+                contactForm.reset();
+            } else {
+                throw new Error(result.message || 'Ошибка при отправке');
+            }
+        } catch (error) {
+            console.error('Form submission error:', error);
+            showNotification('Произошла ошибка при отправке. Попробуйте позже или свяжитесь с нами по телефону.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
+}
+
+// Field error helpers
+function showFieldError(field, message) {
+    clearFieldError(field);
+    const error = document.createElement('div');
+    error.className = 'field-error';
+    error.textContent = message;
+    field.parentNode.appendChild(error);
+}
+
+function clearFieldError(field) {
+    const error = field.parentNode.querySelector('.field-error');
+    if (error) error.remove();
+}
+
+// Notification system
+function showNotification(message, type = 'success') {
+    // Remove existing notification if any
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+}
+
+// Intersection Observer for fade-in animations
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe service cards
+document.querySelectorAll('.service-card').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(card);
+});
+
+// Observe feature items
+document.querySelectorAll('.feature-item').forEach(item => {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(-30px)';
+    item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(item);
+});
+
+// Observe review cards
+document.querySelectorAll('.review-card').forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+    observer.observe(card);
+});
+
+// Observe gallery items
+document.querySelectorAll('.gallery-item').forEach((item, index) => {
+    item.style.opacity = '0';
+    item.style.transform = 'scale(0.8)';
+    item.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+    observer.observe(item);
+});
+
+// Navbar background on scroll
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    const currentScroll = window.pageYOffset;
+    
+    if (currentScroll > 100) {
+        navbar.style.background = 'rgba(10, 14, 39, 0.98)';
+        navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.3)';
+    } else {
+        navbar.style.background = 'rgba(10, 14, 39, 0.95)';
+        navbar.style.boxShadow = 'none';
+    }
+    
+    lastScroll = currentScroll;
+});
+
+// Add parallax effect to hero section
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const hero = document.querySelector('.hero-background');
+    if (hero && scrolled < window.innerHeight) {
+        hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+    }
+});
+
+// Scroll to top button
+const scrollToTopBtn = document.getElementById('scrollToTop');
+if (scrollToTopBtn) {
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            scrollToTopBtn.classList.add('visible');
+        } else {
+            scrollToTopBtn.classList.remove('visible');
+        }
+    });
+
+    scrollToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
+// Load services from API
+async function loadServices() {
+    try {
+        const API_URL = process.env.API_URL || 'http://localhost:3000';
+        const response = await fetch(`${API_URL}/api/services`);
+        const result = await response.json();
+        
+        if (response.ok && result.data) {
+            // Services are already in HTML, but we could update them dynamically here
+            console.log('Services loaded:', result.data);
+        }
+    } catch (error) {
+        console.error('Error loading services:', error);
+    }
+}
+
+// Typewriter effect for hero subtitle
+function typeWriter(element, text, speed = 50) {
+    let i = 0;
+    element.textContent = '';
+    
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    
+    type();
+}
+
+// Load services on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadServices();
+    
+    // Optional: Add typewriter effect to hero subtitle
+    // const heroSubtitle = document.querySelector('.hero-subtitle');
+    // if (heroSubtitle) {
+    //     const originalText = heroSubtitle.textContent;
+    //     typeWriter(heroSubtitle, originalText, 30);
+    // }
+});
+
+// Performance: Lazy load images when they come into view
+if ('IntersectionObserver' in window) {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    observer.unobserve(img);
+                }
+            }
+        });
+    });
+
+    document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+
